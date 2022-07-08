@@ -316,7 +316,7 @@ function App(props) {
               contractConfig={contractConfig}
             />*/}
             <Contract
-              name="YourCollectible"
+              name="NFTAuctionMachine"
               signer={userSigner}
               provider={localProvider}
               address={address}
