@@ -46,7 +46,7 @@ contract NFTAuctionMachine is
             projectId,
             msg.sender,
             false,
-            "i love buffalos",
+            "i love buffaloes",
             "",
             false,
             address(0xCc8f7a89d89c2AB3559f484E0C656423E979ac9C),
@@ -115,10 +115,7 @@ contract NFTAuctionMachine is
         if (highestBidder == address(0)) {
             _tokenIdCounter.increment();
             uint256 tokenId = _tokenIdCounter.current();
-            _mint(
-                address(0x000000000000000000000000000000000000dEaD),
-                tokenId
-            );
+            _mint(address(0x000000000000000000000000000000000000dEaD), tokenId);
             _setTokenURI(tokenId, hardcodedTokenURI);
             return tokenId;
         } else {
@@ -154,29 +151,36 @@ contract NFTAuctionMachine is
 
     // The following functions are overrides required by Solidity.
 
-    // function _beforeTokenTransfer(
-    //     address from,
-    //     address to,
-    //     uint256 tokenId
-    // ) internal override(ERC721, ERC721Enumerable) {
-    //     super._beforeTokenTransfer(from, to, tokenId);
-    // }
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override(ERC721, ERC721Enumerable) {
+        super._beforeTokenTransfer(from, to, tokenId);
+    }
 
-    // function _burn(uint256 tokenId)
-    //     internal
-    //     override(ERC721, ERC721URIStorage)
-    // {
-    //     super._burn(tokenId);
-    // }
+    function _burn(uint256 tokenId)
+        internal
+        override(ERC721, ERC721URIStorage)
+    {
+        super._burn(tokenId);
+    }
 
-    // function tokenURI(uint256 tokenId)
-    //     public
-    //     view
-    //     override(ERC721, ERC721URIStorage)
-    //     returns (string memory)
-    // {
-    //     return super.tokenURI(tokenId);
-    // }
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override(ERC721, ERC721URIStorage)
+        returns (string memory)
+    {
+        return super.tokenURI(tokenId);
+    }
 
-
+    function supportsInterface(bytes4 interfaceID)
+        public
+        view
+        override(ERC721, ERC721Enumerable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceID);
+    }
 }
