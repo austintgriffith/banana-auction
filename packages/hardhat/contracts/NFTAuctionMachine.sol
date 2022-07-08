@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/access/Ownable.sol"; // Only used to get opensea customization access
 
 import "./WETH9.sol";
 import "@jbx-protocol/contracts-v2/contracts/JBETHERC20ProjectPayer.sol";
@@ -13,7 +14,8 @@ contract NFTAuctionMachine is
     ERC721,
     ERC721Enumerable,
     ERC721URIStorage,
-    JBETHERC20ProjectPayer
+    JBETHERC20ProjectPayer,
+    Ownable
 {
     using Counters for Counters.Counter;
 
@@ -113,7 +115,7 @@ contract NFTAuctionMachine is
         if (highestBidder == address(0)) {
             _tokenIdCounter.increment();
             uint256 tokenId = _tokenIdCounter.current();
-            _safeMint(
+            _mint(
                 address(0x000000000000000000000000000000000000dEaD),
                 tokenId
             );
@@ -140,7 +142,7 @@ contract NFTAuctionMachine is
 
             _tokenIdCounter.increment();
             uint256 tokenId = _tokenIdCounter.current();
-            _safeMint(lastBidder, tokenId);
+            _mint(lastBidder, tokenId);
             _setTokenURI(tokenId, hardcodedTokenURI); // BYO METADATA
             return tokenId;
         }
