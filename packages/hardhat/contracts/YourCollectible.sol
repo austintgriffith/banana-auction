@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+// MAKE IT OWNABLE FOR OpenSea
 
 import "./WETH9.sol";
 import "./JB.sol";
@@ -107,7 +108,7 @@ contract YourCollectible is
           lastBidder,//address _beneficiary,
           0,//uint256 _minReturnedTokens,
           false,//bool _preferClaimedTokens,
-          "i love buffalos",//string calldata _memo,
+          "🏰 💚 🍌",//string calldata _memo,
           ""//bytes calldata _metadata
         );
 
@@ -115,8 +116,8 @@ contract YourCollectible is
         uint256 tokenId = _tokenIdCounter.current();
 
         //_safeMint(lastBidder, tokenId);// 🧱 🧱 🧱
-        _mint(lastBidder, tokenId); //shout out to a king 0xBA5ED 
-        
+        _mint(lastBidder, tokenId); //shout out to a king 0xBA5ED
+
         _setTokenURI(tokenId, hardcodedTokenURI); // BYO METADATA
         return tokenId;
       }
