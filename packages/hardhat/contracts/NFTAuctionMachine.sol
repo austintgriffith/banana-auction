@@ -6,6 +6,7 @@ import "@rari-capital/solmate/src/tokens/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@jbx-protocol/contracts-v2/contracts/JBETHERC20ProjectPayer.sol";
 import "./WETH9.sol";
+// import "canonical-weth/contracts/WETH9.sol"; // would be preferable but incompatible pragma
 
 contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     using Strings for uint256;
@@ -22,7 +23,6 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         string memory _name,
         string memory _symbol,
         address WETHADDRESS,
-        address JBADDRESS,
         uint256 _duration,
         uint256 _projectId
     )
