@@ -4,23 +4,22 @@ pragma solidity ^0.8.6;
 // import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@rari-capital/solmate/src/tokens/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "./WETH9.sol";
 import "@jbx-protocol/contracts-v2/contracts/JBETHERC20ProjectPayer.sol";
+import "./WETH9.sol";
 
-contract NFTAuctionMachine is ERC721, JBETHERC20ProjectPayer {
+contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     using Strings for uint256;
 
-    uint256 public totalSupply = 0;
-    uint256 public auctionDuration;
+    uint256 constant public AUCTION_DURATION; // Duration of auctions in seconds
+    uint256 public totalSupply = 0; // total supply of the NFT
+    uint256 public auctionEndingAt; // Current auction ending time
+    uint256 public highestBid; // Current highest bid
+    address public highestBidder; // Current highest bidder
+    uint256 public projectId; // Juicebox project id
+    WETH9 public weth; // WETH contract
 
-    WETH9 public weth;
-
-    IJBProjectPayer public jb;
+    // IJBProjectPayer public jb;
     // IJBPaymentTerminal public terminal;
-
-    string public hardcodedTokenURI;
-
-    uint256 public jbProjectId;
 
     constructor(
         string memory _name,
@@ -28,41 +27,33 @@ contract NFTAuctionMachine is ERC721, JBETHERC20ProjectPayer {
         address WETHADDRESS,
         address JBADDRESS,
         uint256 duration,
-        string memory uri,
-        uint256 projectId
+        uint256 _projectId
     )
         ERC721(_name, _symbol)
         JBETHERC20ProjectPayer(
-            projectId,
-            msg.sender,
+            _projectId,
+            payable(msg.sender),
             false,
             "i love buffaloes",
             "",
             false,
-            address(0xCc8f7a89d89c2AB3559f484E0C656423E979ac9C),
+            IJBDirectory(0xCc8f7a89d89c2AB3559f484E0C656423E979ac9C),
             address(this)
         )
     {
         require(duration > 0, "MUST HAVE DURATION");
         weth = WETH9(payable(WETHADDRESS));
         jb = IJBProjectPayer(payable(JBADDRESS));
-        auctionDuration = duration;
+        auctionDuration = _duration;
         auctionEndingAt = block.timestamp + auctionDuration;
-        hardcodedTokenURI = uri;
-        jbProjectId = projectId;
-        // terminal = directory.primaryTerminalOf(_projectId, _token); // for ProjectPayer
+        projectId = _projectId;
     }
 
-    function _baseURI() internal pure override returns (string memory) {
-        return "https://ipfs.io/ipfs/";
+    function _baseURI() internal pure returns (string memory) {
+        return "ipfs://";
     }
 
     event Bid(address indexed bidder, uint256 amount);
-
-    uint256 public auctionEndingAt;
-
-    uint256 public highestBid;
-    address public highestBidder;
 
     function timeLeft() public view returns (uint256) {
         if (block.timestamp > auctionEndingAt) {
@@ -105,11 +96,10 @@ contract NFTAuctionMachine is ERC721, JBETHERC20ProjectPayer {
 
         if (highestBidder == address(0)) {
             unchecked {
-                _tokenIdCounter++;
+                totalSupply++;
             }
-            uint256 tokenId = _tokenIdCounter;
+            uint256 tokenId = totalSupply;
             _mint(address(0x000000000000000000000000000000000000dEaD), tokenId);
-            _setTokenURI(tokenId, hardcodedTokenURI);
             return tokenId;
         } else {
             uint256 lastAmount = highestBid;
@@ -131,17 +121,16 @@ contract NFTAuctionMachine is ERC721, JBETHERC20ProjectPayer {
             );
 
             unchecked {
-                _tokenIdCounter++;
+                totalSupply++;
             }
-            uint256 tokenId = _tokenIdCounter;
+            uint256 tokenId = totalSupply;
             _mint(lastBidder, tokenId);
-            _setTokenURI(tokenId, hardcodedTokenURI); // BYO METADATA
             return tokenId;
         }
     }
 
     // METADATA
-    string ipfs;
+    string private ipfs;
 
     function tokenURI(uint256 tokenId)
         public
@@ -151,19 +140,18 @@ contract NFTAuctionMachine is ERC721, JBETHERC20ProjectPayer {
         returns (string memory)
     {
         require(tokenId <= totalSupply, "Token does not exist");
-        string memory _tokenURI = _tokenURIs[tokenId];
         string memory base = _baseURI();
 
         // If there is no base URI, return the token URI.
-        if (bytes(base).length == 0) {
-            return _tokenURI;
-        }
+        // if (bytes(base).length == 0) {
+        //     return _tokenURI;
+        // }
         // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
-        if (bytes(_tokenURI).length > 0) {
-            return string(abi.encodePacked(base, _tokenURI));
-        }
+        // if (bytes(_tokenURI).length > 0) {
+        return string(abi.encodePacked(base, ipfs));
+        // }
 
-        return super.tokenURI(tokenId);
+        // return super.tokenURI(tokenId);
     }
 
     function _setTokenURI(string memory newTokenURI)
@@ -178,29 +166,30 @@ contract NFTAuctionMachine is ERC721, JBETHERC20ProjectPayer {
         super._burn(tokenId);
     }
 
-    // function updateJBPaymentTerminal() external {
-    //     terminal = directory.primaryTerminalOf(_projectId, _token);
-    // }
+    function updateJBPaymentTerminal(uint256 _projectId, address _token)
+        public
+    {
+        terminal = directory.primaryTerminalOf(_projectId, _token);
+    }
 
     // The following functions are overrides required by Solidity.
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override(ERC721) {
-        super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    // function supportsInterface(bytes4 interfaceID)
-    //     public
-    //     view
-    //     override(ERC721)
-    //     returns (bool)
-    // {
-    //     return
-    //         type(IERC721Enumerable).interfaceId ||
-    //         _interfaceId == type(IJBProjectPayer).interfaceId ||
-    //         super.supportsInterface(_interfaceId);
+    // function _beforeTokenTransfer(
+    //     address from,
+    //     address to,
+    //     uint256 tokenId
+    // ) internal  {
+    //     super._beforeTokenTransfer(from, to, tokenId);
     // }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(JBETHERC20ProjectPayer, ERC721)
+        returns (bool)
+    {
+        return
+            interfaceId == type(IJBProjectPayer).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
 }
