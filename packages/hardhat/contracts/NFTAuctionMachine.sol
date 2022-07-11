@@ -10,7 +10,7 @@ import "./WETH9.sol";
 contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     using Strings for uint256;
 
-    uint256 constant public AUCTION_DURATION; // Duration of auctions in seconds
+    uint256 public immutable auctionDuration; // Duration of auctions in seconds
     uint256 public totalSupply = 0; // total supply of the NFT
     uint256 public auctionEndingAt; // Current auction ending time
     uint256 public highestBid; // Current highest bid
@@ -18,15 +18,12 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     uint256 public projectId; // Juicebox project id
     WETH9 public weth; // WETH contract
 
-    // IJBProjectPayer public jb;
-    // IJBPaymentTerminal public terminal;
-
     constructor(
         string memory _name,
         string memory _symbol,
         address WETHADDRESS,
         address JBADDRESS,
-        uint256 duration,
+        uint256 _duration,
         uint256 _projectId
     )
         ERC721(_name, _symbol)
@@ -41,11 +38,10 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
             address(this)
         )
     {
-        require(duration > 0, "MUST HAVE DURATION");
+        require(_duration > 0, "MUST HAVE DURATION");
         weth = WETH9(payable(WETHADDRESS));
-        jb = IJBProjectPayer(payable(JBADDRESS));
         auctionDuration = _duration;
-        auctionEndingAt = block.timestamp + auctionDuration;
+        auctionEndingAt = block.timestamp + _duration;
         projectId = _projectId;
     }
 
@@ -108,9 +104,9 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
             highestBid = 0;
             highestBidder = address(0);
 
-            jb.pay{value: lastAmount}(
-                jbProjectId, //uint256 _projectId,
-                address(0), // address _token
+            _pay(
+                projectId, //uint256 _projectId,
+                JBTokens.ETH, // address _token
                 lastAmount, //uint256 _amount,
                 18, //uint256 _decimals,
                 lastBidder, //address _beneficiary,
@@ -164,12 +160,6 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
 
     function _burn(uint256 tokenId) internal virtual override {
         super._burn(tokenId);
-    }
-
-    function updateJBPaymentTerminal(uint256 _projectId, address _token)
-        public
-    {
-        terminal = directory.primaryTerminalOf(_projectId, _token);
     }
 
     // The following functions are overrides required by Solidity.
