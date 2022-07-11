@@ -2925,10 +2925,10 @@
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.3.tgz#e45e384e4b8ec16bce2fd903af78450f6bf7ec98"
   integrity sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==
 
-"@jbx-protocol/contracts-v2@^8.0.1":
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/@jbx-protocol/contracts-v2/-/contracts-v2-8.0.1.tgz#5cb0aa3d15387db78bb847a372cb8032ae75e8f1"
-  integrity sha512-WEJp1n75vT8Edn4JYX9ajDhPxFMiKGsWeACWkv7YGSIid2SCBApkopqAC4h8Bi7UFZYkKn/vsEUC8V7XtoU29Q==
+"@jbx-protocol/contracts-v2@^8.0.2":
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/@jbx-protocol/contracts-v2/-/contracts-v2-8.0.2.tgz#6afe6e02df28ce6f24161feeef92c2a830ccc041"
+  integrity sha512-QSL5gcFPupl5t8coORnQz4kOlsYYxuuq8lzdvwAN37v6PnoyzQ2To4bsJUI0PqAHfcsIu/jBsXK7lq+KGMvEXQ==
 
 "@jest/console@^26.6.2":
   version "26.6.2"

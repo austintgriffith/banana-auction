@@ -11,7 +11,7 @@
     "eslint-plugin-prettier": "^3.4.0"
   },
   "dependencies": {
-    "@jbx-protocol/contracts-v2": "^8.0.1",
+    "@jbx-protocol/contracts-v2": "^8.0.2",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
     "@nomiclabs/hardhat-etherscan": "^3.0.1",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
