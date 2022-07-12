@@ -23,7 +23,7 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
 
     event Bid(address indexed bidder, uint256 amount);
     event BaseURIChanged(string indexed newBaseURI);
-    event NewAuction(uint256 indexed autionEndingAt, uint256 tokenId);
+    event NewAuction(uint256 indexed auctionEndingAt, uint256 tokenId);
 
     constructor(
         string memory _name,
@@ -91,7 +91,7 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     }
 
     function finalize() public returns (uint256) {
-        require(block.timestamp >= auctionEndingAt, "NOT YET");
+        require(block.timestamp >= auctionEndingAt, "Auction not over");
         auctionEndingAt = block.timestamp + auctionDuration;
 
         if (highestBidder == address(0)) {
@@ -99,7 +99,7 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
                 totalSupply++;
             }
             uint256 tokenId = totalSupply;
-            _mint(address(0x000000000000000000000000000000000000dEaD), tokenId);
+            _burn(tokenId);
             return tokenId;
         } else {
             uint256 lastAmount = highestBid;
@@ -125,7 +125,7 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
             }
             uint256 tokenId = totalSupply;
             _mint(lastBidder, tokenId);
-            emit NewAuction(autionEndingAt, totalSupply + 1);
+            emit NewAuction(auctionEndingAt, totalSupply + 1);
             return tokenId;
         }
     }
