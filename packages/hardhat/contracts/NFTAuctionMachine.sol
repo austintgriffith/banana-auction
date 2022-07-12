@@ -4,6 +4,7 @@ pragma solidity ^0.8.6;
 // import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@rari-capital/solmate/src/tokens/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
 import "@jbx-protocol/contracts-v2/contracts/JBETHERC20ProjectPayer.sol";
 import "./IWETH9.sol";
 
@@ -15,7 +16,7 @@ error DUPLICATE_HIGHEST_BIDDER();
 error INVALID_DURATION();
 error INVALID_TOKEN_ID();
 
-contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
+contract NFTAuctionMachine is ERC721, Ownable, ReentrancyGuard, JBETHERC20ProjectPayer {
     using Strings for uint256;
     
     // using constant can save gas more cheap than immutable hence hardcoded the address
@@ -35,6 +36,14 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     event BaseURIChanged(string indexed newBaseURI);
     event NewAuction(uint256 indexed auctionEndingAt, uint256 tokenId);
 
+    /**
+        Creates a new instance of NFTAuctionMachine
+        @param _name Name.
+        @param _symbol Symbol.
+        @param _duration Duration of the auction.
+        @param _projectId JB Project ID of a particular project to pay to.
+        @param uri Base URI.
+     */
     constructor(
         string memory _name,
         string memory _symbol,
@@ -62,10 +71,16 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         _setBaseURI(uri);
     }
 
+    /**
+    @dev Returns the base URI that contains the metadata.
+    */
     function _baseURI() internal view returns (string memory) {
         return baseURI;
     }
 
+    /**
+    @dev Returns time remaining in the auction.
+    */
     function timeLeft() public view returns (uint256) {
         if (block.timestamp > auctionEndingAt) {
             return 0;
@@ -74,7 +89,11 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         }
     }
 
-    function bid() public payable {
+    /**
+    @dev Allows users to bid & send eth to the contract.
+    with .call() there is a caveat around eth transfer, so even though the function follows the checks & effects pattern, we need nonReentrant to be extra secure
+    */
+    function bid() public payable nonReentrant {
         if (auctionEndingAt >= block.timestamp) {
             revert AUCTION_OVER();
         }
@@ -105,6 +124,9 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         emit Bid(msg.sender, msg.value);
     }
 
+    /**
+    @dev Allows anyone to mint the nft to the highest bidder/burn if there were no bids & restart the auction with a new end time.
+    */
     function finalize() public {
         if (block.timestamp < auctionEndingAt) {
             revert AUCTION_NOT_OVER();
@@ -145,6 +167,10 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         }
     }
 
+    /**
+    @dev Returns the token URI for a particular ID.
+    @param tokenId Token ID to get metadata for
+    */
     function tokenURI(uint256 tokenId)
         public
         view
@@ -159,6 +185,10 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         return string(abi.encodePacked(base, "/", tokenId));
     }
 
+    /**
+    @dev Updates the baseURI.
+    @param newBaseURI New Base URI Value
+    */
     function _setBaseURI(string memory newBaseURI) internal virtual onlyOwner {
         baseURI = newBaseURI;
         emit BaseURIChanged(newBaseURI);
@@ -167,16 +197,6 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     function _burn(uint256 tokenId) internal virtual override {
         super._burn(tokenId);
     }
-
-    // The following functions are overrides required by Solidity.
-
-    // function _beforeTokenTransfer(
-    //     address from,
-    //     address to,
-    //     uint256 tokenId
-    // ) internal  {
-    //     super._beforeTokenTransfer(from, to, tokenId);
-    // }
 
     function supportsInterface(bytes4 interfaceId)
         public
