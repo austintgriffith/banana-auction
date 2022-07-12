@@ -230,8 +230,50 @@ contract NFTAuctionMachine is
 // Metadata contract where all NFTs get same metadata
 contract SingleUriMetadata is IMetadata, Ownable {
     event URIChanged(string indexed newURI);
+    event MetadataFrozen();
 
     string public uri;
+    bool metadataFrozen;
+
+    constructor(string memory _uri) {
+        _setURI(_uri);
+    }
+
+    /**
+    @dev Updates the URI.
+    @param newURI New Base URI Value, should include ipfs:// prefix or equivalent.
+    */
+    function _setURI(string memory newURI) internal virtual onlyOwner {
+        require(!metadataFrozen, "Metadata is immutable");
+        uri = newURI;
+        emit URIChanged(uri);
+    }
+
+    /**
+    @dev Freezes the metadata uri.
+    */
+    function freezeMetadata() external onlyOwner {
+        metadataFrozen = true;
+        emit MetadataFrozen();
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        return string(uri);
+    }
+}
+
+// Metadata contract where tokenURI is ipfs://<cid>/<tokenId>
+contract MultiUriMetadata is IMetadata, Ownable {
+    event URIChanged(string indexed newURI);
+    event MetadataFrozen();
+
+    string public baseURI;
     bool metadataFrozen;
 
     constructor(string memory _uri) {
@@ -244,8 +286,8 @@ contract SingleUriMetadata is IMetadata, Ownable {
     */
     function _setBaseURI(string memory newBaseURI) internal virtual onlyOwner {
         require(!metadataFrozen, "Metadata is immutable");
-        uri = newBaseURI;
-        emit URIChanged(newBaseURI);
+        baseURI = newBaseURI;
+        emit URIChanged(baseURI);
     }
 
     /**
@@ -253,6 +295,7 @@ contract SingleUriMetadata is IMetadata, Ownable {
     */
     function freezeMetadata() external onlyOwner {
         metadataFrozen = true;
+        emit MetadataFrozen();
     }
 
     function tokenURI(uint256 tokenId)
@@ -262,6 +305,6 @@ contract SingleUriMetadata is IMetadata, Ownable {
         override
         returns (string memory)
     {
-        return string(abi.encodePacked(uri));
+        return string(abi.encodePacked(baseURI, "/", tokenId));
     }
 }
