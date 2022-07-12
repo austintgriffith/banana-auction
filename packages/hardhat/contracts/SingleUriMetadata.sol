@@ -4,13 +4,15 @@ pragma solidity ^0.8.6;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IMetadata.sol";
 
+error METADATA_IS_IMMUTABLE();
+
 /** Metadata contract where all NFTs get same metadata */
 contract SingleUriMetadata is IMetadata, Ownable {
     event URIChanged(string indexed newURI);
     event MetadataFrozen();
 
     string public uri;
-    bool public metadataFrozen;
+    bool metadataFrozen;
 
     constructor(string memory _uri) {
         _setURI(_uri);
@@ -21,7 +23,9 @@ contract SingleUriMetadata is IMetadata, Ownable {
     @param newURI New Base URI Value, should include ipfs:// prefix or equivalent.
     */
     function _setURI(string memory newURI) internal virtual onlyOwner {
-        require(!metadataFrozen, "Metadata is immutable");
+        if (metadataFrozen) {
+            revert METADATA_IS_IMMUTABLE();
+        }
         uri = newURI;
         emit URIChanged(uri);
     }
@@ -29,13 +33,9 @@ contract SingleUriMetadata is IMetadata, Ownable {
     /**
     @dev Freezes the metadata uri.
     */
-    function freezeMetadata() external onlyOwner {
+    function freezeMetadataURI() external onlyOwner {
         metadataFrozen = true;
         emit MetadataFrozen();
-    }
-
-    function isMetaDataFrozen() external override view returns (bool) {
-        return metadataFrozen;
     }
 
     function tokenURI(uint256 tokenId)

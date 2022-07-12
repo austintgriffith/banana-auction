@@ -4,13 +4,15 @@ pragma solidity ^0.8.6;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IMetadata.sol";
 
+error METADATA_IS_IMMUTABLE();
+
 /** Metadata contract where tokenURI is ipfs://<cid>/<tokenId */
 contract MultiUriMetadata is IMetadata, Ownable {
     event URIChanged(string indexed newURI);
     event MetadataFrozen();
 
     string public baseURI;
-    bool public metadataFrozen;
+    bool metadataFrozen;
 
     constructor(string memory _uri) {
         _setBaseURI(_uri);
@@ -21,7 +23,9 @@ contract MultiUriMetadata is IMetadata, Ownable {
     @param newBaseURI New Base URI Value
     */
     function _setBaseURI(string memory newBaseURI) internal virtual onlyOwner {
-        require(!metadataFrozen, "Metadata is immutable");
+        if (metadataFrozen) {
+            revert METADATA_IS_IMMUTABLE();
+        }
         baseURI = newBaseURI;
         emit URIChanged(baseURI);
     }
@@ -29,13 +33,9 @@ contract MultiUriMetadata is IMetadata, Ownable {
     /**
     @dev Freezes the metadata uri.
     */
-    function freezeMetadata() external onlyOwner {
+    function freezeMetadataURI() external onlyOwner {
         metadataFrozen = true;
         emit MetadataFrozen();
-    }
-
-    function isMetaDataFrozen() external override view returns (bool) {
-        return metadataFrozen;
     }
 
     function tokenURI(uint256 tokenId)

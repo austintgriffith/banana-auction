@@ -40,9 +40,11 @@ contract NFTAuctionMachine is
     uint256 public highestBid; // Current highest bid
     address public highestBidder; // Current highest bidder
     IMetadata public metadata; // Metadata contract
+    bool metadataFrozen; // status of the metadata contract
 
     event Bid(address indexed bidder, uint256 amount);
     event NewAuction(uint256 indexed auctionEndingAt, uint256 tokenId);
+    event MetadataFrozen();
 
     /**
         Creates a new instance of NFTAuctionMachine
@@ -194,10 +196,19 @@ contract NFTAuctionMachine is
     @param _metadata Address of a contract that returns tokenURI
     */
     function setMetadata(IMetadata _metadata) external onlyOwner {
-        if (_metadata.isMetaDataFrozen()) {
+        if (metadataFrozen) {
             revert METADATA_IS_IMMUTABLE();
         }
+
         metadata = _metadata;
+    }
+
+    /**
+    @dev Freezes the metadata contract.
+    */
+    function freezeMetadataInstance() external onlyOwner {
+        metadataFrozen = true;
+        emit MetadataFrozen();
     }
 
     function _burn(uint256 tokenId) internal virtual override {
