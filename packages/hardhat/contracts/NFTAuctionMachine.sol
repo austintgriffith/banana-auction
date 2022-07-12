@@ -6,6 +6,7 @@ import "@rari-capital/solmate/src/tokens/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@jbx-protocol/contracts-v2/contracts/JBETHERC20ProjectPayer.sol";
 import "./WETH9.sol";
+
 // import "canonical-weth/contracts/WETH9.sol"; // would be preferable but incompatible pragma
 
 contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
@@ -18,13 +19,19 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     address public highestBidder; // Current highest bidder
     uint256 public projectId; // Juicebox project id
     WETH9 public weth; // WETH contract
+    string baseURI; // Base URI for all token URIs
+
+    event Bid(address indexed bidder, uint256 amount);
+    event BaseURIChanged(string indexed newBaseURI);
+    event NewAuction(uint256 indexed autionEndingAt, uint256 tokenId);
 
     constructor(
         string memory _name,
         string memory _symbol,
         address WETHADDRESS,
         uint256 _duration,
-        uint256 _projectId
+        uint256 _projectId,
+        string memory uri
     )
         ERC721(_name, _symbol)
         JBETHERC20ProjectPayer(
@@ -43,13 +50,12 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         auctionDuration = _duration;
         auctionEndingAt = block.timestamp + _duration;
         projectId = _projectId;
+        _setBaseURI(uri);
     }
 
-    function _baseURI() internal pure returns (string memory) {
-        return "ipfs://";
+    function _baseURI() internal view returns (string memory) {
+        return baseURI;
     }
-
-    event Bid(address indexed bidder, uint256 amount);
 
     function timeLeft() public view returns (uint256) {
         if (block.timestamp > auctionEndingAt) {
@@ -59,11 +65,10 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         }
     }
 
-    //king of the hill type bid
     function bid() public payable {
-        require(block.timestamp < auctionEndingAt, "BIDDING IS CLOSED");
-        require(msg.value >= highestBid + 0.001 ether, "BID MOAR PLZ");
-        require(msg.sender != highestBidder, "YOU ALREADY KING");
+        require(block.timestamp < auctionEndingAt, "Auction over");
+        require(msg.value >= highestBid + 0.001 ether, "Bid too low");
+        require(msg.sender != highestBidder, "Already winning bid");
 
         uint256 lastAmount = highestBid;
         address lastBidder = highestBidder;
@@ -85,7 +90,6 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         emit Bid(msg.sender, msg.value);
     }
 
-    //function execute
     function finalize() public returns (uint256) {
         require(block.timestamp >= auctionEndingAt, "NOT YET");
         auctionEndingAt = block.timestamp + auctionDuration;
@@ -112,7 +116,7 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
                 lastBidder, //address _beneficiary,
                 0, //uint256 _minReturnedTokens,
                 false, //bool _preferClaimedTokens,
-                "i love buffalos", //string calldata _memo,
+                "nft mint", //string calldata _memo,
                 "" //bytes calldata _metadata
             );
 
@@ -121,12 +125,10 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
             }
             uint256 tokenId = totalSupply;
             _mint(lastBidder, tokenId);
+            emit NewAuction(autionEndingAt, totalSupply + 1);
             return tokenId;
         }
     }
-
-    // METADATA
-    string private ipfs;
 
     function tokenURI(uint256 tokenId)
         public
@@ -138,24 +140,12 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         require(tokenId <= totalSupply, "Token does not exist");
         string memory base = _baseURI();
 
-        // If there is no base URI, return the token URI.
-        // if (bytes(base).length == 0) {
-        //     return _tokenURI;
-        // }
-        // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
-        // if (bytes(_tokenURI).length > 0) {
-        return string(abi.encodePacked(base, ipfs));
-        // }
-
-        // return super.tokenURI(tokenId);
+        return string(abi.encodePacked(base, "/", tokenId));
     }
 
-    function _setTokenURI(string memory newTokenURI)
-        internal
-        virtual
-        onlyOwner
-    {
-        ipfs = newTokenURI;
+    function _setBaseURI(string memory newBaseURI) internal virtual onlyOwner {
+        baseURI = newBaseURI;
+        emit BaseURIChanged(newBaseURI);
     }
 
     function _burn(uint256 tokenId) internal virtual override {
