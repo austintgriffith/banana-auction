@@ -90,7 +90,7 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         emit Bid(msg.sender, msg.value);
     }
 
-    function finalize() public returns (uint256) {
+    function finalize() public {
         require(block.timestamp >= auctionEndingAt, "Auction not over");
         auctionEndingAt = block.timestamp + auctionDuration;
 
@@ -100,7 +100,6 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
             }
             uint256 tokenId = totalSupply;
             _burn(tokenId);
-            return tokenId;
         } else {
             uint256 lastAmount = highestBid;
             address lastBidder = highestBidder;
@@ -126,7 +125,6 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
             uint256 tokenId = totalSupply;
             _mint(lastBidder, tokenId);
             emit NewAuction(auctionEndingAt, totalSupply + 1);
-            return tokenId;
         }
     }
 
