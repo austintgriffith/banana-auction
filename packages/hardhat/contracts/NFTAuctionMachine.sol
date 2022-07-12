@@ -262,6 +262,6 @@ contract SingleUriMetadata is IMetadata, Ownable {
         override
         returns (string memory)
     {
-        return string (abi.encodePacked(uri, "/", tokenId));
+        return string(abi.encodePacked(uri));
     }
 }
