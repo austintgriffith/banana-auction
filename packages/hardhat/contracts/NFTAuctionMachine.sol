@@ -5,20 +5,30 @@ pragma solidity ^0.8.6;
 import "@rari-capital/solmate/src/tokens/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@jbx-protocol/contracts-v2/contracts/JBETHERC20ProjectPayer.sol";
-import "./WETH9.sol";
+import "./IWETH9.sol";
 
-// import "canonical-weth/contracts/WETH9.sol"; // would be preferable but incompatible pragma
+// CUSTOM ERRORS will save gas
+error AUCTION_NOT_OVER();
+error AUCTION_OVER();
+error BID_TOO_LOW();
+error DUPLICATE_HIGHEST_BIDDER();
+error INVALID_DURATION();
+error INVALID_TOKEN_ID();
 
 contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     using Strings for uint256;
-
+    
+    // using constant can save gas more cheap than immutable hence hardcoded the address
+    IWETH9 public constant weth = IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);// WETH contract
+    // immutable vars to save gas
     uint256 public immutable auctionDuration; // Duration of auctions in seconds
-    uint256 public totalSupply = 0; // total supply of the NFT
+    uint256 public immutable projectId; // Juicebox project id
+    
+    // initialising costs a bit of gas by default the value is 0
+    uint256 public totalSupply; // total supply of the NFT
     uint256 public auctionEndingAt; // Current auction ending time
     uint256 public highestBid; // Current highest bid
     address public highestBidder; // Current highest bidder
-    uint256 public projectId; // Juicebox project id
-    WETH9 public weth; // WETH contract
     string baseURI; // Base URI for all token URIs
 
     event Bid(address indexed bidder, uint256 amount);
@@ -28,7 +38,6 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     constructor(
         string memory _name,
         string memory _symbol,
-        address WETHADDRESS,
         uint256 _duration,
         uint256 _projectId,
         string memory uri
@@ -44,9 +53,9 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
             IJBDirectory(0xCc8f7a89d89c2AB3559f484E0C656423E979ac9C),
             address(this)
         )
-    {
-        require(_duration > 0, "MUST HAVE DURATION");
-        weth = WETH9(payable(WETHADDRESS));
+    {   if (_duration == 0) {
+        revert INVALID_DURATION();
+        }
         auctionDuration = _duration;
         auctionEndingAt = block.timestamp + _duration;
         projectId = _projectId;
@@ -66,9 +75,15 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     }
 
     function bid() public payable {
-        require(block.timestamp < auctionEndingAt, "Auction over");
-        require(msg.value >= highestBid + 0.001 ether, "Bid too low");
-        require(msg.sender != highestBidder, "Already winning bid");
+        if (auctionEndingAt >= block.timestamp) {
+            revert AUCTION_OVER();
+        }
+        if (msg.value < (highestBid + 0.001 ether)) {
+            revert BID_TOO_LOW();
+        }
+        if (msg.sender == highestBidder) {
+            revert DUPLICATE_HIGHEST_BIDDER();
+        }
 
         uint256 lastAmount = highestBid;
         address lastBidder = highestBidder;
@@ -91,7 +106,9 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
     }
 
     function finalize() public {
-        require(block.timestamp >= auctionEndingAt, "Auction not over");
+        if (block.timestamp < auctionEndingAt) {
+            revert AUCTION_NOT_OVER();
+        }
         auctionEndingAt = block.timestamp + auctionDuration;
 
         if (highestBidder == address(0)) {
@@ -134,8 +151,9 @@ contract NFTAuctionMachine is ERC721, Ownable, JBETHERC20ProjectPayer {
         virtual
         override
         returns (string memory)
-    {
-        require(tokenId <= totalSupply, "Token does not exist");
+    {   if (tokenId > totalSupply) {
+        revert INVALID_TOKEN_ID();
+    }
         string memory base = _baseURI();
 
         return string(abi.encodePacked(base, "/", tokenId));
