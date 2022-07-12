@@ -18,7 +18,6 @@
     "@openzeppelin/contracts": "^4.7.0",
     "@rari-capital/solmate": "^6.4.0",
     "@tenderly/hardhat-tenderly": "^1.0.10",
-    "canonical-weth": "^1.4.0",
     "chai": "^4.2.0",
     "chalk": "^4.1.0",
     "dotenv": "^8.2.0",
