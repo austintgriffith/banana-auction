@@ -15,6 +15,7 @@ error BID_TOO_LOW();
 error DUPLICATE_HIGHEST_BIDDER();
 error INVALID_DURATION();
 error INVALID_TOKEN_ID();
+error TOKEN_TRANSFER_FAILURE();
 
 contract NFTAuctionMachine is ERC721, Ownable, ReentrancyGuard, JBETHERC20ProjectPayer {
     using Strings for uint256;
@@ -114,10 +115,10 @@ contract NFTAuctionMachine is ERC721, Ownable, ReentrancyGuard, JBETHERC20Projec
             (bool sent, ) = lastBidder.call{value: lastAmount}("");
             if (!sent) {
                 weth.deposit{value: lastAmount}();
-                require(
-                    weth.transfer(lastBidder, lastAmount),
-                    "Payment failed"
-                );
+                bool success = weth.transfer(lastBidder, lastAmount);
+                if (!success) {
+                  revert TOKEN_TRANSFER_FAILURE();
+                }
             }
         }
 
