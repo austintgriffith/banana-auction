@@ -12,27 +12,44 @@ const localChainId = "31337";
 //     }, ms)
 //   );
 
+
 module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
+  let weth = await deploy("WETH9", {
+    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+    from: deployer,
+    log: true,
+  });
+  
+  let metadata = await deploy("SingleUriMetadata", {
+    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+    from: deployer,
+    args: [
+      "QmVFxBSW5aFLKRQKtjEnGw8kKGsqy27Czcj22f3ksdSBnu"
+    ],
+    log: true,
+  });
+
   await deploy("NFTAuctionMachine", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [
-      wethy.address, //0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, //wethy.address,
-      jb.address, //0x7Ae63FBa045Fec7CaE1a75cF7Aa14183483b8397, // jb payment terminal
+      "NFTName",
+      "NFTSymbol",
       15,//3600,
-      "QmVFxBSW5aFLKRQKtjEnGw8kKGsqy27Czcj22f3ksdSBnu",
-      44
+      44,
+      metadata.address,
+      weth.address,
     ],
     log: true,
   });
 
 
   // Getting a previously deployed contract
-  const NFTAuctionMachine = await ethers.getContract("NFTAuctionMachine", deployer);
+  const NFTAuctionMachine = await ethers.getContractAt("NFTAuctionMachine", deployer);
   /*  await YourContract.setPurpose("Hello");
   
     // To take ownership of yourContract using the ownable library uncomment next line and add the 
