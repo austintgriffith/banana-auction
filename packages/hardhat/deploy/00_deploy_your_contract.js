@@ -17,16 +17,6 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
-
-  let wethy = await deploy("WETH9", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
-    from: deployer,
-    // args: [ "Hello", ethers.utils.parseEther("1.5") ],
-    log: true,
-  });
-
-
-
   await deploy("NFTAuctionMachine", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
