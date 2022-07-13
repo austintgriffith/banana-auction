@@ -12,7 +12,7 @@ contract SingleUriMetadata is IMetadata, Ownable {
     event MetadataFrozen();
 
     string public uri;
-    bool metadataFrozen;
+    bool public metadataFrozen;
 
     constructor(string memory _uri) {
         _setURI(_uri);

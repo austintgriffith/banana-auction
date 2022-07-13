@@ -40,7 +40,7 @@ contract NFTAuctionMachine is
     uint256 public highestBid; // Current highest bid
     address public highestBidder; // Current highest bidder
     IMetadata public metadata; // Metadata contract
-    bool metadataFrozen; // status of the metadata contract
+    bool public metadataFrozen; // freeze status of the metadata contract
 
     event Bid(address indexed bidder, uint256 amount);
     event NewAuction(uint256 indexed auctionEndingAt, uint256 tokenId);

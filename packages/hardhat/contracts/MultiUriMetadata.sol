@@ -12,7 +12,7 @@ contract MultiUriMetadata is IMetadata, Ownable {
     event MetadataFrozen();
 
     string public baseURI;
-    bool metadataFrozen;
+    bool public metadataFrozen;
 
     constructor(string memory _uri) {
         _setBaseURI(_uri);
