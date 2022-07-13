@@ -320,6 +320,7 @@ module.exports = {
     clear: true,
     flat: true,
     only: [],
+    except: ["ERC721"],
     spacing: 2,
     pretty: false,
   },
