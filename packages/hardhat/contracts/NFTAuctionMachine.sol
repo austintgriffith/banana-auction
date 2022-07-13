@@ -62,7 +62,6 @@ contract NFTAuctionMachine is
         IMetadata _metadata,
         IWETH9 _weth
     )
-        // string memory uri
         ERC721(_name, _symbol)
         JBETHERC20ProjectPayer(
             _projectId,
