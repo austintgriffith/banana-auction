@@ -49,7 +49,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
 
   // Getting a previously deployed contract
-  const NFTAuctionMachine = await ethers.getContractAt("NFTAuctionMachine", deployer);
+  // const NFTAuctionMachine = await ethers.getContract("NFTAuctionMachine", deployer);
   /*  await YourContract.setPurpose("Hello");
   
     // To take ownership of yourContract using the ownable library uncomment next line and add the 
