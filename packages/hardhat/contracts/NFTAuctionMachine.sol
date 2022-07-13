@@ -28,8 +28,7 @@ contract NFTAuctionMachine is
     using Strings for uint256;
 
     // using constant can save gas more cheap than immutable hence hardcoded the address
-    IWETH9 public constant weth =
-        IWETH9(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2); // WETH contract
+    IWETH9 public immutable weth;// WETH contract
     // immutable vars to save gas
     uint256 public immutable auctionDuration; // Duration of auctions in seconds
     uint256 public immutable projectId; // Juicebox project id
@@ -60,7 +59,8 @@ contract NFTAuctionMachine is
         string memory _symbol,
         uint256 _duration,
         uint256 _projectId,
-        IMetadata _metadata
+        IMetadata _metadata,
+        IWETH9 _weth
     )
         // string memory uri
         ERC721(_name, _symbol)
@@ -82,6 +82,7 @@ contract NFTAuctionMachine is
         auctionEndingAt = block.timestamp + _duration;
         projectId = _projectId;
         metadata = _metadata;
+        weth = _weth;
     }
 
     /**
