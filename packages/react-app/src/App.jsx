@@ -286,18 +286,17 @@ function App(props) {
       <Switch>
         <Route exact path="/">
           {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Home 
+          <Home
             localChainId={localChainId}
             contractConfig={contractConfig}
             userSigner={userSigner}
-            yourLocalBalance={yourLocalBalance} 
-            readContracts={readContracts} 
-            address={address} 
-            localProvider={localProvider} 
+            yourLocalBalance={yourLocalBalance}
+            readContracts={readContracts}
+            address={address}
+            localProvider={localProvider}
             mainnetProvider={mainnetProvider}
             tx={tx}
             blockExplorer={blockExplorer}
-            
           />
         </Route>
         <Route exact path="/debug">
@@ -305,34 +304,33 @@ function App(props) {
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
-            
-
-            <Contract
-              name="JB"
-              signer={userSigner}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-              contractConfig={contractConfig}
-            />*/}
-            <Contract
-              name="NFTAuctionMachine"
-              signer={userSigner}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-              contractConfig={contractConfig}
-            />
-            <Contract
-              name="WETH9"
-              signer={userSigner}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-              contractConfig={contractConfig}
-            />
+      */}
+          <Contract
+            name="NFTAuctionMachine"
+            signer={userSigner}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+            contractConfig={contractConfig}
+          />
+          <Contract
+            name="SingleUriMetadata"
+            signer={userSigner}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+            contractConfig={contractConfig}
+          />
+          <Contract
+            name="WETH9"
+            signer={userSigner}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+            contractConfig={contractConfig}
+          />
         </Route>
-    
+
         <Route path="/mainnetdai">
           <Contract
             name="DAI"
@@ -356,7 +354,7 @@ function App(props) {
             */}
         </Route>
         <Route path="/subgraph">
-         {/* <Subgraph
+          {/* <Subgraph
             subgraphUri={props.subgraphUri}
             tx={tx}
             writeContracts={writeContracts}
