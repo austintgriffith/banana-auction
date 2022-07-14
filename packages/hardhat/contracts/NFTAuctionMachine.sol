@@ -17,6 +17,7 @@ error DUPLICATE_HIGHEST_BIDDER();
 error INVALID_DURATION();
 error INVALID_TOKEN_ID();
 error METADATA_IS_IMMUTABLE();
+error MAX_SUPPLY_REACHED();
 error TOKEN_TRANSFER_FAILURE();
 
 contract NFTAuctionMachine is
@@ -26,6 +27,8 @@ contract NFTAuctionMachine is
     JBETHERC20ProjectPayer
 {
     using Strings for uint256;
+
+    uint256 constant MAX_SUPPLY = 420;
 
     // using constant can save gas more cheap than immutable hence hardcoded the address
     IWETH9 public immutable weth;// WETH contract
@@ -100,6 +103,9 @@ contract NFTAuctionMachine is
     with .call() there is a caveat around eth transfer, so even though the function follows the checks & effects pattern, we need nonReentrant to be extra secure
     */
     function bid() public payable nonReentrant {
+        if (totalSupply == MAX_SUPPLY) {
+            revert MAX_SUPPLY_REACHED();
+        }
         if (auctionEndingAt >= block.timestamp) {
             revert AUCTION_OVER();
         }
@@ -134,6 +140,9 @@ contract NFTAuctionMachine is
     @dev Allows anyone to mint the nft to the highest bidder/burn if there were no bids & restart the auction with a new end time.
     */
     function finalize() public {
+        if (totalSupply == MAX_SUPPLY) {
+            revert MAX_SUPPLY_REACHED();
+        }
         if (block.timestamp < auctionEndingAt) {
             revert AUCTION_NOT_OVER();
         }
