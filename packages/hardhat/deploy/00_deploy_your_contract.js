@@ -19,34 +19,33 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
+  // DEPLOY WETH (for local testing)
+  // COMMENT THIS OUT WHEN DEPLOYING TO A NON-LOCAL CHAIN
   let weth = await deploy("WETH9", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     log: true,
   });
 
-  let metadata;
+  let metadata = process.env.METADATA_URI;
 
-  if (process.env.SINGLE_URI_METADATA == "true") {
+
+  if (process.env.SINGLE_URI_METADATA === "true") {
     metadata = await deploy("SingleUriMetadata", {
       // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
       from: deployer,
-      args: [
-        "QmVFxBSW5aFLKRQKtjEnGw8kKGsqy27Czcj22f3ksdSBnu"
-      ],
+      args: [metadata],
       log: true,
     });
   } else {
     metadata = await deploy("MultiUriMetadata", {
       // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
       from: deployer,
-      args: [
-        "QmVFxBSW5aFLKRQKtjEnGw8kKGsqy27Czcj22f3ksdSBnu"
-      ],
+      args: [metadata],
       log: true,
     });
   }
-  
+
 
 
   await deploy("NFTAuctionMachine", {
