@@ -27,13 +27,9 @@ contract NFTAuctionMachine is
 {
     using Strings for uint256;
 
-    // using constant can save gas more cheap than immutable hence hardcoded the address
     IWETH9 public immutable weth;// WETH contract
-    // immutable vars to save gas
     uint256 public immutable auctionDuration; // Duration of auctions in seconds
     uint256 public immutable projectId; // Juicebox project id
-
-    // initialising costs a bit of gas by default the value is 0
     uint256 public totalSupply; // total supply of the NFT
     uint256 public auctionEndingAt; // Current auction ending time
     uint256 public highestBid; // Current highest bid
@@ -97,7 +93,6 @@ contract NFTAuctionMachine is
 
     /**
     @dev Allows users to bid & send eth to the contract.
-    with .call() there is a caveat around eth transfer, so even though the function follows the checks & effects pattern, we need nonReentrant to be extra secure
     */
     function bid() public payable nonReentrant {
         if (auctionEndingAt >= block.timestamp) {
