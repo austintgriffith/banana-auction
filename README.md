@@ -4,7 +4,7 @@
 
 Welcome to the Banana Auction Machine - a BuidlGuidl and Juicebox collab
 
-A banana NFT is auctioned off each hour and proceeds go to the BuidlGuidl Juicebox
+In the example project, a banana NFT is auctioned off each hour and proceeds go to the BuidlGuidl Juicebox. You can change the metadata and Juicebox project that receives proceeds to fund your ideas with automated NFT auctions. 
 
 ```sh
 git clone https://github.com/austintgriffith/banana-auction
