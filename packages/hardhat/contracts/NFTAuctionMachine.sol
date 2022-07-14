@@ -8,7 +8,6 @@ import "@jbx-protocol/contracts-v2/contracts/JBETHERC20ProjectPayer.sol";
 import "./interfaces/IWETH9.sol";
 import "./interfaces/IMetadata.sol";
 
-
 // CUSTOM ERRORS will save gas
 error AUCTION_NOT_OVER();
 error AUCTION_OVER();
@@ -27,7 +26,7 @@ contract NFTAuctionMachine is
 {
     using Strings for uint256;
 
-    IWETH9 public immutable weth;// WETH contract
+    IWETH9 public immutable weth; // WETH contract
     uint256 public immutable auctionDuration; // Duration of auctions in seconds
     uint256 public immutable projectId; // Juicebox project id
     uint256 public totalSupply; // total supply of the NFT
@@ -112,7 +111,7 @@ contract NFTAuctionMachine is
         highestBidder = msg.sender;
 
         if (lastAmount > 0) {
-            (bool sent, ) = lastBidder.call{value: lastAmount}("");
+            (bool sent, ) = lastBidder.call{value: lastAmount, gas: 20000}("");
             if (!sent) {
                 weth.deposit{value: lastAmount}();
                 bool success = weth.transfer(lastBidder, lastAmount);
@@ -139,6 +138,7 @@ contract NFTAuctionMachine is
                 totalSupply++;
             }
             uint256 tokenId = totalSupply;
+            _mint(address(this), tokenId); // new line
             _burn(tokenId);
         } else {
             uint256 lastAmount = highestBid;
@@ -206,10 +206,6 @@ contract NFTAuctionMachine is
         emit MetadataFrozen();
     }
 
-    function _burn(uint256 tokenId) internal virtual override {
-        super._burn(tokenId);
-    }
-
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -217,7 +213,7 @@ contract NFTAuctionMachine is
         returns (bool)
     {
         return
-            interfaceId == type(IJBProjectPayer).interfaceId ||
-            super.supportsInterface(interfaceId);
+            JBETHERC20ProjectPayer.supportsInterface(interfaceId) ||
+            ERC721.supportsInterface(interfaceId);
     }
 }
