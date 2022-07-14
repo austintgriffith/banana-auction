@@ -12,8 +12,10 @@ git clone https://github.com/austintgriffith/banana-auction
 ```sh
 cd banana-auction
 yarn install
-yarn chain
+yarn fork 
 ```
+
+Note: The contract relies on JB Protocol and WETH, so it's much easier to fork than redeploy both on a local chain. Thus the `yarn fork` in lieu of `yarn chain` above.
 
 > in a second terminal window, start your 📱 frontend:
 
@@ -26,9 +28,7 @@ yarn start
 
 ```sh
 cd banana-auction
-yarn deploy
+yarn deploy --reset
 ```
-
-> You can `yarn deploy --reset` to deploy a new contract any time.
 
 📱 Open http://localhost:3000 to see the app
