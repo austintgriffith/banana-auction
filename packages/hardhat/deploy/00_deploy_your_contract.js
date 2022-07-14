@@ -1,6 +1,7 @@
 // deploy/00_deploy_your_contract.js
 
 const { ethers } = require("hardhat");
+require("dotenv").config();
 
 const localChainId = "31337";
 
@@ -23,15 +24,30 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     from: deployer,
     log: true,
   });
+
+  let metadata;
+
+  if (process.env.SINGLE_URI_METADATA == "true") {
+    metadata = await deploy("SingleUriMetadata", {
+      // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+      from: deployer,
+      args: [
+        "QmVFxBSW5aFLKRQKtjEnGw8kKGsqy27Czcj22f3ksdSBnu"
+      ],
+      log: true,
+    });
+  } else {
+    metadata = await deploy("MultiUriMetadata", {
+      // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+      from: deployer,
+      args: [
+        "QmVFxBSW5aFLKRQKtjEnGw8kKGsqy27Czcj22f3ksdSBnu"
+      ],
+      log: true,
+    });
+  }
   
-  let metadata = await deploy("SingleUriMetadata", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
-    from: deployer,
-    args: [
-      "QmVFxBSW5aFLKRQKtjEnGw8kKGsqy27Czcj22f3ksdSBnu"
-    ],
-    log: true,
-  });
+
 
   await deploy("NFTAuctionMachine", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
