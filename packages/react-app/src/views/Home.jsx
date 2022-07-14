@@ -135,7 +135,7 @@ function Home({ localChainId, contractConfig, userSigner,yourLocalBalance, readC
                   Welcome to the Banana Auction Machine - a BuidlGuidl and Juicebox collab
                 </div>
                 <div style={{padding:4}}>
-                  A banana NFT is auctioned off each hour and proceeds go to the <a href="https://juicebox.money/#/v2/p/44" target="_blank">BuidlGuidl Juicebox</a>.
+                  A banana NFT is auctioned off every 15 minutes and the proceeds are forwarded to the <a href="https://juicebox.money/#/v2/p/44" target="_blank">BuidlGuidl Juicebox</a>. <strong>The minimum bid is 0.001 ETH.</strong>
                 </div>
                 <div style={{color:"#FF0000"}}>
                   This contract is unaudited and yolo'd to mainnet. Please do not make large bids!
