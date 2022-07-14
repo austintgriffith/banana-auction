@@ -15,7 +15,7 @@ yarn install
 yarn fork 
 ```
 
-Note: The contract relies on JB Protocol and WETH, so it's much easier to fork than redeploy both on a local chain. Thus the `yarn fork` in lieu of `yarn chain` above.
+Note: The contract relies on JB Protocol and WETH, so it's much easier to fork than redeploy both on a local chain. Thus the `yarn fork` in lieu of `yarn chain` above. If `yarn fork` gives you trouble, try updating the mainnet infura API key in `hardhat.config.js`. Sometimes you have to run it a few times before it works.
 
 > in a second terminal window, start your 📱 frontend:
 
