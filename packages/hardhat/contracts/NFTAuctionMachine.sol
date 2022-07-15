@@ -164,7 +164,7 @@ contract NFTAuctionMachine is
             }
             uint256 tokenId = totalSupply;
             _mint(lastBidder, tokenId);
-            emit NewAuction(auctionEndingAt, totalSupply + 1);
+            emit NewAuction(auctionEndingAt, tokenId + 1);
         }
     }
 
