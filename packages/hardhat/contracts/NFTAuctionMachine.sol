@@ -138,7 +138,6 @@ contract NFTAuctionMachine is
                 totalSupply++;
             }
             uint256 tokenId = totalSupply;
-            _mint(address(this), tokenId); // new line
             _burn(tokenId);
         } else {
             uint256 lastAmount = highestBid;
