@@ -21,11 +21,14 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
   // DEPLOY WETH (for local testing)
   // COMMENT THIS OUT WHEN DEPLOYING TO A NON-LOCAL CHAIN
-  let weth = await deploy("WETH9", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
-    from: deployer,
-    log: true,
-  });
+  // let weth = await deploy("WETH9", {
+  //   // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+  //   from: deployer,
+  //   log: true,
+  // });
+
+  // REFERENCE MAINNET WETH
+  let weth = 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2;
 
   let metadata = process.env.METADATA_URI;
 
@@ -52,9 +55,9 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [
-      "NFTName",
-      "NFTSymbol",
-      15,//3600,
+      "Banana Auction",
+      "BANANA",
+      1200,
       44,
       metadata.address,
       weth.address,
