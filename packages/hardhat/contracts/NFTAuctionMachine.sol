@@ -156,7 +156,7 @@ contract NFTAuctionMachine is
                 lastBidder, //address _beneficiary,
                 0, //uint256 _minReturnedTokens,
                 false, //bool _preferClaimedTokens,
-                "nft mint", //string calldata _memo, // TODO: Add your own memo here. Links to image files are displayed on the Juicebox project page as images.
+                "nft mint", //string calldata _memo, // TODO: Add your own memo here. Links to image å are displayed on the Juicebox project page as images.
                 "" //bytes calldata _metadata
             );
 
