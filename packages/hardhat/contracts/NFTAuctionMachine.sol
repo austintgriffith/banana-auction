@@ -8,11 +8,11 @@ import "@jbx-protocol/contracts-v2/contracts/JBETHERC20ProjectPayer.sol";
 import "./interfaces/IWETH9.sol";
 import "./interfaces/IMetadata.sol";
 
-// CUSTOM ERRORS will save gas
+// Custom Errors
 error AUCTION_NOT_OVER();
 error AUCTION_OVER();
 error BID_TOO_LOW();
-error DUPLICATE_HIGHEST_BIDDER();
+error ALREADY_HIGHEST_BIDDER();
 error INVALID_DURATION();
 error INVALID_TOKEN_ID();
 error METADATA_IS_IMMUTABLE();
@@ -26,10 +26,10 @@ contract NFTAuctionMachine is
 {
     using Strings for uint256;
 
-    IWETH9 public immutable weth; // WETH contract
+    IWETH9 public immutable weth; // WETH contract address
     uint256 public immutable auctionDuration; // Duration of auctions in seconds
-    uint256 public immutable projectId; // Juicebox project id
-    uint256 public totalSupply; // total supply of the NFT
+    uint256 public immutable projectId; // Juicebox project id that will receive auction proceeds
+    uint256 public totalSupply; // Total supply of the NFT, increases over time
     uint256 public auctionEndingAt; // Current auction ending time
     uint256 public highestBid; // Current highest bid
     address public highestBidder; // Current highest bidder
@@ -50,7 +50,6 @@ contract NFTAuctionMachine is
         @param _weth WETH contract address
         @param _jbDirectory JB Directory contract address
      */
-    // @param uri Base URI.
     constructor(
         string memory _name,
         string memory _symbol,
@@ -65,7 +64,7 @@ contract NFTAuctionMachine is
             _projectId,
             payable(msg.sender),
             false,
-            "i love buffaloes",
+            "NFT auction proceeds",
             "",
             false,
             IJBDirectory(_jbDirectory),
@@ -97,14 +96,14 @@ contract NFTAuctionMachine is
     @dev Allows users to bid & send eth to the contract.
     */
     function bid() public payable nonReentrant {
-        if (auctionEndingAt <= block.timestamp) {
+        if (block.timestamp > auctionEndingAt) {
             revert AUCTION_OVER();
         }
         if (msg.value < (highestBid + 0.001 ether)) {
             revert BID_TOO_LOW();
         }
         if (msg.sender == highestBidder) {
-            revert DUPLICATE_HIGHEST_BIDDER();
+            revert ALREADY_HIGHEST_BIDDER();
         }
 
         uint256 lastAmount = highestBid;
@@ -131,7 +130,7 @@ contract NFTAuctionMachine is
     @dev Allows anyone to mint the nft to the highest bidder/burn if there were no bids & restart the auction with a new end time.
     */
     function finalize() public {
-        if (block.timestamp < auctionEndingAt) {
+        if (block.timestamp <= auctionEndingAt) {
             revert AUCTION_NOT_OVER();
         }
         auctionEndingAt = block.timestamp + auctionDuration;
