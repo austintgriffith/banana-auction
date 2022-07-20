@@ -97,7 +97,7 @@ contract NFTAuctionMachine is
     @dev Allows users to bid & send eth to the contract.
     */
     function bid() public payable nonReentrant {
-        if (auctionEndingAt >= block.timestamp) {
+        if (auctionEndingAt <= block.timestamp) {
             revert AUCTION_OVER();
         }
         if (msg.value < (highestBid + 0.001 ether)) {
