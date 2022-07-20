@@ -27,9 +27,13 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   //   log: true,
   // });
 
-  // REFERENCE MAINNET WETH
-  let weth = { address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" };
-  console.log(weth.address);
+  // MAINNET CONTRACT ADDRESSES
+  // let weth = { address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" };
+  // let jbDirectory = { address: "0xCc8f7a89d89c2AB3559f484E0C656423E979ac9C" };
+
+  // RINEKBY CONTRACT ADDRESSES
+  let weth = { address: "0xc778417E063141139Fce010982780140Aa0cD5Ab" };
+  let jbDirectory = { address: "0x1A9b04A9617ba5C9b7EBfF9668C30F41db6fC21a" };
 
   let metadata = process.env.METADATA_URI;
 
@@ -57,10 +61,11 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     args: [
       "Banana Auction",
       "BANANA",
-      15,
+      25,
       44,
       metadata.address,
       weth.address,
+      jbDirectory.address,
     ],
     log: true,
   });
