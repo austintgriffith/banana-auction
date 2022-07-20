@@ -28,10 +28,10 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   // });
 
   // REFERENCE MAINNET WETH
-  let weth = 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2;
+  let weth = { address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" };
+  console.log(weth.address);
 
   let metadata = process.env.METADATA_URI;
-
 
   if (process.env.SINGLE_URI_METADATA === "true") {
     metadata = await deploy("SingleUriMetadata", {
@@ -57,7 +57,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     args: [
       "Banana Auction",
       "BANANA",
-      1200,
+      15,
       44,
       metadata.address,
       weth.address,
