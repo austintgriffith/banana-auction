@@ -135,7 +135,7 @@ contract NFTAuctionMachine is
         }
         auctionEndingAt = block.timestamp + auctionDuration;
 
-        if (highestBidder == address(0)) {
+        if (highestBidder == address(0)) { // If the auction received no bids, emit burn event and iterate totalSupply
             unchecked {
                 totalSupply++;
             }
@@ -156,7 +156,7 @@ contract NFTAuctionMachine is
                 lastBidder, //address _beneficiary,
                 0, //uint256 _minReturnedTokens,
                 false, //bool _preferClaimedTokens,
-                "nft mint", //string calldata _memo,
+                "nft mint", //string calldata _memo, // TODO: Add your own memo here. Links to image files are displayed on the Juicebox project page as images.
                 "" //bytes calldata _metadata
             );
 
