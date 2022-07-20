@@ -61,8 +61,8 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     args: [
       "Banana Auction",
       "BANANA",
-      25,
-      44,
+      30,
+      1,
       metadata.address,
       weth.address,
       jbDirectory.address,
