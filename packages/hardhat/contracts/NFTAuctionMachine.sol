@@ -47,6 +47,8 @@ contract NFTAuctionMachine is
         @param _duration Duration of the auction.
         @param _projectId JB Project ID of a particular project to pay to.
         @param _metadata Address of a contract that returns tokenURI
+        @param _weth WETH contract address
+        @param _jbDirectory JB Directory contract address
      */
     // @param uri Base URI.
     constructor(
@@ -55,7 +57,8 @@ contract NFTAuctionMachine is
         uint256 _duration,
         uint256 _projectId,
         IMetadata _metadata,
-        IWETH9 _weth
+        IWETH9 _weth,
+        IJBDirectory _jbDirectory
     )
         ERC721(_name, _symbol)
         JBETHERC20ProjectPayer(
@@ -65,7 +68,7 @@ contract NFTAuctionMachine is
             "i love buffaloes",
             "",
             false,
-            IJBDirectory(0xCc8f7a89d89c2AB3559f484E0C656423E979ac9C),
+            IJBDirectory(_jbDirectory),
             address(this)
         )
     {
