@@ -17,6 +17,7 @@ error INVALID_DURATION();
 error INVALID_TOKEN_ID();
 error METADATA_IS_IMMUTABLE();
 error TOKEN_TRANSFER_FAILURE();
+error  MAX_SUPPLY_REACHED();
 
 contract NFTAuctionMachine is
     ERC721,
@@ -35,6 +36,7 @@ contract NFTAuctionMachine is
     address public highestBidder; // Current highest bidder
     IMetadata public metadata; // Metadata contract
     bool public metadataFrozen; // freeze status of the metadata contract
+    uint256 public maxSupply; // Maximum issuance of NFTs. 0 means unlimited.
 
     event Bid(address indexed bidder, uint256 amount);
     event NewAuction(uint256 indexed auctionEndingAt, uint256 tokenId);
@@ -49,6 +51,7 @@ contract NFTAuctionMachine is
         @param _metadata Address of a contract that returns tokenURI
         @param _weth WETH contract address
         @param _jbDirectory JB Directory contract address
+        @param _maxSupply Maximum supply of NFTs. 0 means unlimited.
      */
     constructor(
         string memory _name,
@@ -57,7 +60,8 @@ contract NFTAuctionMachine is
         uint256 _projectId,
         IMetadata _metadata,
         IWETH9 _weth,
-        IJBDirectory _jbDirectory
+        IJBDirectory _jbDirectory,
+        uint256 _maxSupply
     )
         ERC721(_name, _symbol)
         JBETHERC20ProjectPayer(
@@ -79,6 +83,7 @@ contract NFTAuctionMachine is
         projectId = _projectId;
         metadata = _metadata;
         weth = _weth;
+        maxSupply = _maxSupply;
     }
 
     /**
@@ -133,6 +138,10 @@ contract NFTAuctionMachine is
         if (block.timestamp <= auctionEndingAt) {
             revert AUCTION_NOT_OVER();
         }
+        if (totalSupply == maxSupply){
+            revert MAX_SUPPLY_REACHED();
+        }
+        
         auctionEndingAt = block.timestamp + auctionDuration;
 
         if (highestBidder == address(0)) { // If the auction received no bids, emit burn event and iterate totalSupply
