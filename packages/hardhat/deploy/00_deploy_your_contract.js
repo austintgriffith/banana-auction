@@ -66,6 +66,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
       metadata.address,
       weth.address,
       jbDirectory.address,
+      2,
     ],
     log: true,
   });
