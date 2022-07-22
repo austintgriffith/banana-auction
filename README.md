@@ -32,3 +32,7 @@ yarn deploy --reset
 ```
 
 📱 Open http://localhost:3000 to see the app
+
+
+## Verifying contract
+`yarn verify --constructor-args constructorArguments.js <CONTRACT_ADDRESS>`
