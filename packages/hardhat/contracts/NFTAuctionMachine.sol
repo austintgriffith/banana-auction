@@ -30,13 +30,13 @@ contract NFTAuctionMachine is
     IWETH9 public immutable weth; // WETH contract address
     uint256 public immutable auctionDuration; // Duration of auctions in seconds
     uint256 public immutable projectId; // Juicebox project id that will receive auction proceeds
+    uint256 public immutable maxSupply; // Maximum issuance of NFTs. 0 means unlimited.
     uint256 public totalSupply; // Total supply of the NFT, increases over time
     uint256 public auctionEndingAt; // Current auction ending time
     uint256 public highestBid; // Current highest bid
     address public highestBidder; // Current highest bidder
     IMetadata public metadata; // Metadata contract
     bool public metadataFrozen; // freeze status of the metadata contract
-    uint256 public maxSupply; // Maximum issuance of NFTs. 0 means unlimited.
 
     event Bid(address indexed bidder, uint256 amount);
     event NewAuction(uint256 indexed auctionEndingAt, uint256 tokenId);
@@ -138,7 +138,7 @@ contract NFTAuctionMachine is
         if (block.timestamp <= auctionEndingAt) {
             revert AUCTION_NOT_OVER();
         }
-        if (totalSupply == maxSupply){
+        if (maxSupply > 0 && totalSupply == maxSupply){
             revert MAX_SUPPLY_REACHED();
         }
         
