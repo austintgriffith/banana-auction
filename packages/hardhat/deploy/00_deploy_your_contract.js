@@ -21,14 +21,21 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
   // DEPLOY WETH (for local testing)
   // COMMENT THIS OUT WHEN DEPLOYING TO A NON-LOCAL CHAIN
-  let weth = await deploy("WETH9", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
-    from: deployer,
-    log: true,
-  });
+  // let weth = await deploy("WETH9", {
+  //   // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+  //   from: deployer,
+  //   log: true,
+  // });
+
+  // MAINNET CONTRACT ADDRESSES
+  // let weth = { address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" };
+  // let jbDirectory = { address: "0xCc8f7a89d89c2AB3559f484E0C656423E979ac9C" };
+
+  // RINEKBY CONTRACT ADDRESSES
+  let weth = { address: "0xc778417E063141139Fce010982780140Aa0cD5Ab" };
+  let jbDirectory = { address: "0x1A9b04A9617ba5C9b7EBfF9668C30F41db6fC21a" };
 
   let metadata = process.env.METADATA_URI;
-
 
   if (process.env.SINGLE_URI_METADATA === "true") {
     metadata = await deploy("SingleUriMetadata", {
@@ -52,12 +59,14 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [
-      "NFTName",
-      "NFTSymbol",
-      15,//3600,
-      44,
+      "Banana Auction",
+      "BANANA",
+      30,
+      1,
       metadata.address,
       weth.address,
+      jbDirectory.address,
+      2,
     ],
     log: true,
   });

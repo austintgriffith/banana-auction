@@ -8,16 +8,16 @@ import "@jbx-protocol/contracts-v2/contracts/JBETHERC20ProjectPayer.sol";
 import "./interfaces/IWETH9.sol";
 import "./interfaces/IMetadata.sol";
 
-
-// CUSTOM ERRORS will save gas
+// Custom Errors
 error AUCTION_NOT_OVER();
 error AUCTION_OVER();
 error BID_TOO_LOW();
-error DUPLICATE_HIGHEST_BIDDER();
+error ALREADY_HIGHEST_BIDDER();
 error INVALID_DURATION();
 error INVALID_TOKEN_ID();
 error METADATA_IS_IMMUTABLE();
 error TOKEN_TRANSFER_FAILURE();
+error  MAX_SUPPLY_REACHED();
 
 contract NFTAuctionMachine is
     ERC721,
@@ -27,10 +27,11 @@ contract NFTAuctionMachine is
 {
     using Strings for uint256;
 
-    IWETH9 public immutable weth;// WETH contract
+    IWETH9 public immutable weth; // WETH contract address
     uint256 public immutable auctionDuration; // Duration of auctions in seconds
-    uint256 public immutable projectId; // Juicebox project id
-    uint256 public totalSupply; // total supply of the NFT
+    uint256 public immutable projectId; // Juicebox project id that will receive auction proceeds
+    uint256 public immutable maxSupply; // Maximum issuance of NFTs. 0 means unlimited.
+    uint256 public totalSupply; // Total supply of the NFT, increases over time
     uint256 public auctionEndingAt; // Current auction ending time
     uint256 public highestBid; // Current highest bid
     address public highestBidder; // Current highest bidder
@@ -48,25 +49,29 @@ contract NFTAuctionMachine is
         @param _duration Duration of the auction.
         @param _projectId JB Project ID of a particular project to pay to.
         @param _metadata Address of a contract that returns tokenURI
+        @param _weth WETH contract address
+        @param _jbDirectory JB Directory contract address
+        @param _maxSupply Maximum supply of NFTs. 0 means unlimited.
      */
-    // @param uri Base URI.
     constructor(
         string memory _name,
         string memory _symbol,
         uint256 _duration,
         uint256 _projectId,
         IMetadata _metadata,
-        IWETH9 _weth
+        IWETH9 _weth,
+        IJBDirectory _jbDirectory,
+        uint256 _maxSupply
     )
         ERC721(_name, _symbol)
         JBETHERC20ProjectPayer(
             _projectId,
             payable(msg.sender),
             false,
-            "i love buffaloes",
+            "NFT auction proceeds",
             "",
             false,
-            IJBDirectory(0xCc8f7a89d89c2AB3559f484E0C656423E979ac9C),
+            IJBDirectory(_jbDirectory),
             address(this)
         )
     {
@@ -78,6 +83,7 @@ contract NFTAuctionMachine is
         projectId = _projectId;
         metadata = _metadata;
         weth = _weth;
+        maxSupply = _maxSupply;
     }
 
     /**
@@ -95,14 +101,14 @@ contract NFTAuctionMachine is
     @dev Allows users to bid & send eth to the contract.
     */
     function bid() public payable nonReentrant {
-        if (auctionEndingAt >= block.timestamp) {
+        if (block.timestamp > auctionEndingAt) {
             revert AUCTION_OVER();
         }
         if (msg.value < (highestBid + 0.001 ether)) {
             revert BID_TOO_LOW();
         }
         if (msg.sender == highestBidder) {
-            revert DUPLICATE_HIGHEST_BIDDER();
+            revert ALREADY_HIGHEST_BIDDER();
         }
 
         uint256 lastAmount = highestBid;
@@ -112,7 +118,7 @@ contract NFTAuctionMachine is
         highestBidder = msg.sender;
 
         if (lastAmount > 0) {
-            (bool sent, ) = lastBidder.call{value: lastAmount}("");
+            (bool sent, ) = lastBidder.call{value: lastAmount, gas: 20000}("");
             if (!sent) {
                 weth.deposit{value: lastAmount}();
                 bool success = weth.transfer(lastBidder, lastAmount);
@@ -129,17 +135,21 @@ contract NFTAuctionMachine is
     @dev Allows anyone to mint the nft to the highest bidder/burn if there were no bids & restart the auction with a new end time.
     */
     function finalize() public {
-        if (block.timestamp < auctionEndingAt) {
+        if (block.timestamp <= auctionEndingAt) {
             revert AUCTION_NOT_OVER();
         }
+        if (maxSupply > 0 && totalSupply == maxSupply){
+            revert MAX_SUPPLY_REACHED();
+        }
+        
         auctionEndingAt = block.timestamp + auctionDuration;
 
-        if (highestBidder == address(0)) {
+        if (highestBidder == address(0)) { // If the auction received no bids, emit burn event and iterate totalSupply
             unchecked {
                 totalSupply++;
             }
             uint256 tokenId = totalSupply;
-            _burn(tokenId);
+            emit Transfer(address(0), address(0), tokenId);
         } else {
             uint256 lastAmount = highestBid;
             address lastBidder = highestBidder;
@@ -155,7 +165,7 @@ contract NFTAuctionMachine is
                 lastBidder, //address _beneficiary,
                 0, //uint256 _minReturnedTokens,
                 false, //bool _preferClaimedTokens,
-                "nft mint", //string calldata _memo,
+                "nft mint", //string calldata _memo, // TODO: Add your own memo here. Links to image å are displayed on the Juicebox project page as images.
                 "" //bytes calldata _metadata
             );
 
@@ -164,7 +174,7 @@ contract NFTAuctionMachine is
             }
             uint256 tokenId = totalSupply;
             _mint(lastBidder, tokenId);
-            emit NewAuction(auctionEndingAt, totalSupply + 1);
+            emit NewAuction(auctionEndingAt, tokenId + 1);
         }
     }
 
@@ -206,10 +216,6 @@ contract NFTAuctionMachine is
         emit MetadataFrozen();
     }
 
-    function _burn(uint256 tokenId) internal virtual override {
-        super._burn(tokenId);
-    }
-
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -217,7 +223,7 @@ contract NFTAuctionMachine is
         returns (bool)
     {
         return
-            interfaceId == type(IJBProjectPayer).interfaceId ||
-            super.supportsInterface(interfaceId);
+            JBETHERC20ProjectPayer.supportsInterface(interfaceId) ||
+            ERC721.supportsInterface(interfaceId);
     }
 }

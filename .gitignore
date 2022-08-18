@@ -51,6 +51,8 @@ artifacts
 # misc
 .DS_Store
 .env*
+mnemonic*
+.mnemonic*
 
 # debug
 npm-debug.log*
@@ -66,3 +68,5 @@ yarn-error.log*
 
 # doc directory
 /doc
+
+/packages/metadata/collection-metadata/for-upload/*
